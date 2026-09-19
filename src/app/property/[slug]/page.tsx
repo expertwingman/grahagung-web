@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
-import { getPropertyBySlug } from "@/lib/property-utils";
+import { getPropertyBySlug } from "@/lib/properties-db";
 import PropertyGallery from "@/components/PropertyGallery";
+
+// Stok & harga harus selalu terbaru dari database.
+export const dynamic = "force-dynamic";
 
 function formatRupiah(value: number | null) {
   if (value === null) {
@@ -54,7 +57,7 @@ export default async function PropertyDetailPage({
   params,
 }: PropertyDetailPageProps) {
   const { slug } = await params;
-  const property = getPropertyBySlug(slug);
+  const property = await getPropertyBySlug(slug);
 
   if (!property) {
     notFound();

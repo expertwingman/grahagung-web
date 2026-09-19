@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
-import { getPropertyBySlug } from "@/lib/property-utils";
+import { getPropertyBySlug } from "@/lib/properties-db";
 import CheckoutForm from "./CheckoutForm";
+
+// Stok & harga harus selalu terbaru dari database.
+export const dynamic = "force-dynamic";
 
 type CheckoutPageProps = {
   searchParams: Promise<{
@@ -29,7 +32,7 @@ export default async function CheckoutPage({
     redirect("/property");
   }
 
-  const property = getPropertyBySlug(params.property);
+  const property = await getPropertyBySlug(params.property);
 
   if (!property) {
     redirect("/property");

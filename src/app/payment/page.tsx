@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
-import { getPropertyBySlug } from "@/lib/property-utils";
+import { getPropertyBySlug } from "@/lib/properties-db";
+
+// Stok & harga harus selalu terbaru dari database.
+export const dynamic = "force-dynamic";
 
 type PaymentPageProps = {
   searchParams: Promise<{
@@ -28,7 +31,7 @@ export default async function PaymentPage({
     redirect("/property");
   }
 
-  const property = getPropertyBySlug(params.property);
+  const property = await getPropertyBySlug(params.property);
 
   if (!property) {
     redirect("/property");

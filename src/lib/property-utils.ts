@@ -1,14 +1,9 @@
-import { properties, type Property } from "@/lib/properties";
+// Hanya berisi fungsi murni, tanpa impor kode server.
+// Aman dipakai dari komponen client (PropertyBrowser, Siteplan).
 
-export function propertySlug(property: Property) {
+export function propertySlug(property: { project: string; block: string }) {
   return `${property.project}-${property.block}`
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-export function getPropertyBySlug(slug: string) {
-  return properties.find(
-    (property) => propertySlug(property) === slug
-  );
 }

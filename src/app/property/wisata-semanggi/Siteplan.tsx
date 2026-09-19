@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { properties } from "@/lib/properties";
+import type { Property } from "@/lib/property-types";
 import { propertySlug } from "@/lib/property-utils";
 
 type UnitStatus = "AVAILABLE" | "SOLD" | "PURCHASE_IN_PROGRESS";
@@ -73,7 +73,11 @@ function getStatusColor(status: UnitStatus) {
   return "#16a34a";
 }
 
-export default function Siteplan() {
+export default function Siteplan({
+  properties,
+}: {
+  properties: Property[];
+}) {
   const [selectedBlock, setSelectedBlock] = useState("ALL");
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
@@ -198,7 +202,11 @@ export default function Siteplan() {
               </p>
 
               <p className="mt-1 text-2xl font-semibold">
-                {filteredProperties.length}
+                {
+                  filteredProperties.filter(
+                    (property) => property.status === "AVAILABLE"
+                  ).length
+                }
               </p>
             </div>
 

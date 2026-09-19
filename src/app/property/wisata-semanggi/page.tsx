@@ -1,6 +1,12 @@
 import Siteplan from "./Siteplan";
+import { getPropertiesByProject } from "@/lib/properties-db";
 
-export default function WisataSemanggiPage() {
+// Stok harus selalu terbaru dari database.
+export const dynamic = "force-dynamic";
+
+export default async function WisataSemanggiPage() {
+  const properties = await getPropertiesByProject("Wisata Semanggi");
+
   return (
     <main className="min-h-screen bg-[#f5f3ec] text-[#153c33]">
       <header className="border-b border-black/10 bg-white">
@@ -39,7 +45,7 @@ export default function WisataSemanggiPage() {
         </p>
 
         <div className="mt-10">
-          <Siteplan />
+          <Siteplan properties={properties} />
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
