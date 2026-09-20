@@ -82,6 +82,8 @@ export async function submitLead(
       status: "no_respon",
       notes: catatan,
       input_date: new Date().toISOString().slice(0, 10),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       // assigned_to & created_by sengaja dikosongkan:
       // manajer yang menentukan sales penanggung jawab.
     });
