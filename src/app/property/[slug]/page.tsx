@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getPropertyBySlug } from "@/lib/properties-db";
 import PropertyGallery from "@/components/PropertyGallery";
+import LeadForm from "@/components/LeadForm";
 
 // Stok & harga harus selalu terbaru dari database.
 export const dynamic = "force-dynamic";
@@ -291,6 +292,22 @@ export default async function PropertyDetailPage({
                   </p>
                 </div>
               )}
+            </div>
+
+            <div className="mt-8 border-t border-black/10 pt-8">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#927845]">
+                Tanya unit ini
+              </p>
+
+              <h3 className="mt-2 text-lg font-semibold text-[#153c33]">
+                Hubungi tim pemasaran
+              </h3>
+
+              <p className="mt-1 mb-5 text-xs leading-5 text-[#71807a]">
+                Tinggalkan kontak Anda, tim kami akan menghubungi.
+              </p>
+
+              <LeadForm slug={slug} />
             </div>
           </aside>
         </div>
