@@ -36,6 +36,7 @@ export async function submitLead(
   const email = ((formData.get("email") as string) ?? "").trim();
   const pesan = ((formData.get("pesan") as string) ?? "").trim();
   const slug = ((formData.get("slug") as string) ?? "").trim();
+  const tujuan = (formData.get("tujuan") as string) === "beli" ? "beli" : "tanya";
 
   if (nama.length < 2 || nama.length > 100) {
     return { status: "error", message: "Mohon isi nama lengkap Anda." };
@@ -59,13 +60,17 @@ export async function submitLead(
 
   // Unit yang diminati diambil dari DATABASE berdasarkan slug,
   // bukan dari data yang dikirim browser.
-  let catatan = "Dikirim lewat website.";
+  const awalan = tujuan === "beli" ? "[PENGAJUAN PEMBELIAN] " : "";
+  let catatan = awalan + "Dikirim lewat website.";
   if (slug) {
     const unit = await getPropertyBySlug(slug);
     if (unit) {
       catatan =
-        `Minat unit ${unit.block} — ${unit.project} ` +
-        `(${unit.buildingArea}/${unit.landArea ?? "-"} m², ${unit.floor}).`;
+        awalan +
+        `${tujuan === "beli" ? "Ingin membeli" : "Minat"} unit ${unit.block} — ${unit.project} ` +
+        `(${unit.buildingArea}/${unit.landArea ?? "-"} m², ${unit.floor}` +
+        (unit.price ? `, Rp ${unit.price.toLocaleString("id-ID")}` : "") +
+        `).`;
     }
   }
   if (pesan) catatan += `\n\nPesan: ${pesan}`;
@@ -82,8 +87,6 @@ export async function submitLead(
       status: "no_respon",
       notes: catatan,
       input_date: new Date().toISOString().slice(0, 10),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
       // assigned_to & created_by sengaja dikosongkan:
       // manajer yang menentukan sales penanggung jawab.
     });
@@ -105,6 +108,9 @@ export async function submitLead(
 
   return {
     status: "ok",
-    message: "Terima kasih. Tim pemasaran kami akan menghubungi Anda segera.",
+    message:
+      tujuan === "beli"
+        ? "Terima kasih. Pengajuan Anda kami terima — tim sales menghubungi Anda dalam 1×24 jam kerja."
+        : "Terima kasih. Tim pemasaran kami akan menghubungi Anda segera.",
   };
 }

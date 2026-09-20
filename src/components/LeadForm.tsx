@@ -15,12 +15,19 @@ function TombolKirim() {
       disabled={pending}
       className="w-full rounded-full bg-[#153c33] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#285a4d] disabled:opacity-60"
     >
-      {pending ? "MENGIRIM…" : "KIRIM"}
+      {pending ? "Mengirim…" : "Kirim"}
     </button>
   );
 }
 
-export default function LeadForm({ slug }: { slug: string }) {
+export default function LeadForm({
+  slug,
+  mode = "tanya",
+}: {
+  slug: string;
+  /** "beli" = pengajuan pembelian, "tanya" = sekadar bertanya */
+  mode?: "beli" | "tanya";
+}) {
   const [state, formAction] = useActionState(submitLead, AWAL);
 
   if (state.status === "ok") {
@@ -35,6 +42,7 @@ export default function LeadForm({ slug }: { slug: string }) {
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="tujuan" value={mode} />
 
       {/* Jebakan bot — disembunyikan dari pengguna */}
       <input

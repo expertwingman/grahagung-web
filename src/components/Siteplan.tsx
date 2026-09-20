@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { Property } from "@/lib/property-types";
-import { propertySlug } from "@/lib/property-utils";
+import { unitPath } from "@/lib/property-utils";
 
 type UnitStatus = "AVAILABLE" | "SOLD" | "PURCHASE_IN_PROGRESS";
 
@@ -202,17 +202,13 @@ export default function Siteplan({
               </p>
 
               <p className="mt-1 text-2xl font-semibold">
-                {
-                  filteredProperties.filter(
-                    (property) => property.status === "AVAILABLE"
-                  ).length
-                }
+                {filteredProperties.length}
               </p>
             </div>
 
             <div className="flex items-center gap-2 text-xs font-semibold">
               <span className="h-3 w-3 rounded-full bg-green-600" />
-              Available
+              Tersedia
             </div>
           </div>
         </div>
@@ -294,17 +290,17 @@ export default function Siteplan({
         <div className="mt-4 flex flex-wrap items-center gap-5 rounded-2xl bg-white px-5 py-4 text-xs font-semibold">
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-green-600" />
-            Available
+            Tersedia
           </div>
 
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-[#927845]" />
-            Purchase in progress
+            Dalam proses
           </div>
 
           <div className="flex items-center gap-2">
             <span className="h-3 w-3 rounded-full bg-red-600" />
-            Sold
+            Terjual
           </div>
         </div>
 
@@ -332,10 +328,10 @@ export default function Siteplan({
               </div>
 
               <a
-                href={`/property/${propertySlug(selectedProperty)}`}
+                href={unitPath(selectedProperty)}
                 className="inline-flex rounded-full bg-[#153c33] px-6 py-3.5 text-sm font-bold text-white hover:bg-[#285a4d]"
               >
-                LIHAT DETAIL UNIT
+                Lihat detail unit
               </a>
             </div>
           </div>

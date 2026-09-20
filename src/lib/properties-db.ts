@@ -1,6 +1,10 @@
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { propertySlug } from "@/lib/property-utils";
+import {
+  propertySlug,
+  projectSlug,
+  blockSlug,
+} from "@/lib/property-utils";
 import type { Property, PropertyStatus } from "@/lib/property-types";
 
 /** Bentuk baris apa adanya dari view public.properties (snake_case). */
@@ -37,8 +41,7 @@ function toProperty(row: DbProperty): Property {
 
 /**
  * Ambil semua unit dari Supabase.
- * Dibungkus cache() supaya satu request hanya sekali query,
- * walau dipanggil dari beberapa komponen.
+ * Dibungkus cache() supaya satu request hanya sekali query.
  */
 export const getPropertiesFromDb = cache(async (): Promise<DbProperty[]> => {
   const supabase = await createClient();
@@ -63,18 +66,68 @@ export const getAllProperties = cache(async (): Promise<Property[]> => {
   return rows.map(toProperty);
 });
 
-/** Satu unit berdasarkan slug. Sumbernya database, bukan file statis. */
+/** Slug lama gabungan — hanya untuk pengalihan URL lama. */
 export async function getPropertyBySlug(
   slug: string
 ): Promise<Property | undefined> {
   const all = await getAllProperties();
-  return all.find((property) => propertySlug(property) === slug);
+  return all.find((p) => propertySlug(p) === slug);
 }
 
-/** Unit milik satu proyek, mis. "Wisata Semanggi". */
+/** Unit berdasarkan slug proyek + slug blok (URL baru). */
+export async function getPropertyByProjectAndBlock(
+  project: string,
+  block: string
+): Promise<Property | undefined> {
+  const all = await getAllProperties();
+  return all.find(
+    (p) => projectSlug(p.project) === project && blockSlug(p.block) === block
+  );
+}
+
+/** Unit milik satu proyek, berdasarkan nama atau slug proyek. */
 export async function getPropertiesByProject(
-  project: string
+  projectNameOrSlug: string
 ): Promise<Property[]> {
   const all = await getAllProperties();
-  return all.filter((property) => property.project === project);
+  const target = projectSlug(projectNameOrSlug);
+  return all.filter((p) => projectSlug(p.project) === target);
 }
+
+export type ProjectSummary = {
+  name: string;
+  slug: string;
+  city: string;
+  total: number;
+  available: number;
+  minPrice: number | null;
+  maxPrice: number | null;
+};
+
+/** Ringkasan per proyek: jumlah unit, tersedia, rentang harga — dari database. */
+export const getProjectSummaries = cache(async (): Promise<ProjectSummary[]> => {
+  const all = await getAllProperties();
+  const map = new Map<string, ProjectSummary>();
+
+  for (const p of all) {
+    const key = projectSlug(p.project);
+    const s = map.get(key) ?? {
+      name: p.project,
+      slug: key,
+      city: p.location,
+      total: 0,
+      available: 0,
+      minPrice: null,
+      maxPrice: null,
+    };
+    s.total += 1;
+    if (p.status === "AVAILABLE") s.available += 1;
+    if (p.price !== null) {
+      s.minPrice = s.minPrice === null ? p.price : Math.min(s.minPrice, p.price);
+      s.maxPrice = s.maxPrice === null ? p.price : Math.max(s.maxPrice, p.price);
+    }
+    map.set(key, s);
+  }
+
+  return Array.from(map.values());
+});

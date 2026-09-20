@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { DbProperty } from "@/lib/properties-db";
-import { propertySlug } from "@/lib/property-utils";
+import { unitPath } from "@/lib/property-utils";
 
 type PropertyStatus =
   | "AVAILABLE"
@@ -571,13 +571,10 @@ export default function PropertyBrowser({
 
                 <div className="mt-8 border-t border-black/10 pt-6">
                   <Link
-                    href={`/property/${propertySlug({
-                      project: selectedProperty.project,
-                      block: selectedProperty.block,
-                    } as never)}`}
+                    href={unitPath(selectedProperty)}
                     className="inline-flex w-full items-center justify-center rounded-full bg-[#153c33] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#285a4d]"
                   >
-                    LIHAT DETAIL LENGKAP
+                    Lihat detail lengkap
                   </Link>
 
                   <button

@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getPropertyBySlug } from "@/lib/properties-db";
+import { getPropertyByProjectAndBlock } from "@/lib/properties-db";
+import { PROJECTS } from "@/lib/projects-info";
+import { projectPath, unitPath, propertySlug } from "@/lib/property-utils";
+import { SITE, waLink } from "@/lib/site";
 import PropertyGallery from "@/components/PropertyGallery";
 import LeadForm from "@/components/LeadForm";
 
@@ -50,19 +55,47 @@ function statusClass(status: string) {
 
 type PropertyDetailPageProps = {
   params: Promise<{
-    slug: string;
+    project: string;
+    block: string;
   }>;
 };
+
+export async function generateMetadata({
+  params,
+}: PropertyDetailPageProps): Promise<Metadata> {
+  const { project, block } = await params;
+  const p = await getPropertyByProjectAndBlock(project, block);
+  if (!p) return { title: "Unit tidak ditemukan" };
+
+  const info = PROJECTS[project];
+  const judul = `Unit ${p.block} ${p.project} — ${p.floor}, ${p.buildingArea}/${p.landArea ?? "-"} m²`;
+  const deskripsi =
+    `${p.floor} ${p.buildingArea} m² di atas tanah ${p.landArea ?? "-"} m² di ${p.project}, ${info?.area ?? p.location}. ` +
+    (p.price ? `Harga ${formatRupiah(p.price)}. ` : "") +
+    `Sertifikat SHGB. Dijual langsung oleh ${SITE.legalName}.`;
+
+  return {
+    title: judul,
+    description: deskripsi,
+    // Halaman unit adalah varian dari halaman proyek; kanonik ke proyek
+    // supaya 200+ unit serupa tidak dinilai sebagai konten duplikat.
+    alternates: { canonical: projectPath(p.project) },
+    openGraph: { title: judul, description: deskripsi, type: "website" },
+  };
+}
 
 export default async function PropertyDetailPage({
   params,
 }: PropertyDetailPageProps) {
-  const { slug } = await params;
-  const property = await getPropertyBySlug(slug);
+  const { project, block } = await params;
+  const property = await getPropertyByProjectAndBlock(project, block);
 
   if (!property) {
     notFound();
   }
+
+  const slug = propertySlug(property);
+  const info = PROJECTS[project];
 
   const canBuy =
     property.status === "AVAILABLE" &&
@@ -70,30 +103,36 @@ export default async function PropertyDetailPage({
 
   return (
     <main className="min-h-screen bg-[#f5f3ec] text-[#153c33]">
-      {/* HEADER */}
-      <header className="border-b border-black/10 bg-[#f5f3ec]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
-          <a href="/property">
-            <div className="text-[10px] font-semibold tracking-[0.34em] text-[#6c806f]">
-              GRAHA AGUNG
-            </div>
-
-            <div className="text-lg font-bold tracking-tight">
-              KENCANA GROUP
-            </div>
-          </a>
-
-          <a
-            href="/property"
-            className="rounded-full border border-[#153c33] px-5 py-2 text-sm font-semibold transition hover:bg-[#153c33] hover:text-white"
-          >
-            Kembali
-          </a>
-        </div>
-      </header>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Beranda", item: SITE.url },
+              { "@type": "ListItem", position: 2, name: "Perumahan", item: `${SITE.url}/perumahan` },
+              { "@type": "ListItem", position: 3, name: property.project, item: `${SITE.url}${projectPath(property.project)}` },
+              { "@type": "ListItem", position: 4, name: `Unit ${property.block}`, item: `${SITE.url}${unitPath(property)}` },
+            ],
+          }),
+        }}
+      />
 
       {/* MAIN */}
       <section className="mx-auto max-w-7xl px-6 py-8 lg:px-10 lg:py-12">
+        <nav aria-label="Breadcrumb" className="mb-6 text-xs text-[#71807a]">
+          <ol className="flex flex-wrap items-center gap-2">
+            <li><Link href="/" className="hover:underline">Beranda</Link></li>
+            <li aria-hidden="true">/</li>
+            <li><Link href="/perumahan" className="hover:underline">Perumahan</Link></li>
+            <li aria-hidden="true">/</li>
+            <li><Link href={projectPath(property.project)} className="hover:underline">{property.project}</Link></li>
+            <li aria-hidden="true">/</li>
+            <li className="text-[#153c33]">Unit {property.block}</li>
+          </ol>
+        </nav>
+
         <div className="mb-7">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#927845]">
             {property.project}
@@ -270,14 +309,23 @@ export default async function PropertyDetailPage({
               {canBuy ? (
                 <>
                   <a
-                    href={`/checkout?property=${encodeURIComponent(slug)}`}
+                    href="#ajukan"
                     className="block w-full rounded-full bg-[#153c33] px-6 py-4 text-center text-sm font-bold text-white transition hover:bg-[#285a4d]"
                   >
-                    BELI SEKARANG
+                    Ajukan pembelian
+                  </a>
+
+                  <a
+                    href={waLink(`Halo, saya tertarik dengan unit ${property.block} di ${property.project}. Mohon informasinya.`)}
+                    target="_blank"
+                    rel="noopener"
+                    className="mt-3 block w-full rounded-full border border-[#153c33] px-6 py-3.5 text-center text-sm font-semibold text-[#153c33] transition hover:bg-[#153c33] hover:text-white"
+                  >
+                    Tanya via WhatsApp
                   </a>
 
                   <p className="mt-4 text-center text-xs leading-5 text-[#85908b]">
-                    Anda akan melanjutkan ke proses checkout.
+                    Tim sales menghubungi Anda untuk jadwal survei dan tanda jadi.
                   </p>
                 </>
               ) : (
@@ -294,20 +342,22 @@ export default async function PropertyDetailPage({
               )}
             </div>
 
-            <div className="mt-8 border-t border-black/10 pt-8">
+            <div id="ajukan" className="mt-8 scroll-mt-28 border-t border-black/10 pt-8">
               <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#927845]">
-                Tanya unit ini
+                {canBuy ? "Ajukan pembelian" : "Tanya unit ini"}
               </p>
 
               <h3 className="mt-2 text-lg font-semibold text-[#153c33]">
-                Hubungi tim pemasaran
+                {canBuy ? `Saya ingin membeli unit ${property.block}` : "Hubungi tim pemasaran"}
               </h3>
 
               <p className="mt-1 mb-5 text-xs leading-5 text-[#71807a]">
-                Tinggalkan kontak Anda, tim kami akan menghubungi.
+                {canBuy
+                  ? "Tinggalkan kontak Anda. Tim kami menghubungi untuk jadwal survei, tanda jadi, dan pelunasan bersama notaris."
+                  : "Tinggalkan kontak Anda, tim kami akan menghubungi."}
               </p>
 
-              <LeadForm slug={slug} />
+              <LeadForm slug={slug} mode={canBuy ? "beli" : "tanya"} />
             </div>
           </aside>
         </div>

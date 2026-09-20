@@ -4,6 +4,9 @@ import { getPropertyBySlug } from "@/lib/properties-db";
 // Stok & harga harus selalu terbaru dari database.
 export const dynamic = "force-dynamic";
 
+// Alur transaksi: jangan diindeks, belum ditautkan dari mana pun.
+export const metadata = { robots: { index: false, follow: false } };
+
 type PaymentPageProps = {
   searchParams: Promise<{
     property?: string;
@@ -39,23 +42,6 @@ export default async function PaymentPage({
 
   return (
     <main className="min-h-screen bg-[#f5f3ec] text-[#153c33]">
-      <header className="border-b border-black/10 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
-          <a href="/">
-            <div className="text-[10px] font-semibold tracking-[0.34em] text-[#6c806f]">
-              GRAHA AGUNG
-            </div>
-
-            <div className="text-lg font-bold">
-              KENCANA GROUP
-            </div>
-          </a>
-
-          <span className="text-sm text-[#687570]">
-            Payment
-          </span>
-        </div>
-      </header>
 
       <section className="mx-auto max-w-5xl px-6 py-12 lg:px-10 lg:py-16">
         <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#927845]">
