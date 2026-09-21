@@ -5,7 +5,8 @@ import { getPropertyByProjectAndBlock } from "@/lib/properties-db";
 import { PROJECTS } from "@/lib/projects-info";
 import { projectPath, unitPath, propertySlug } from "@/lib/property-utils";
 import { SITE, waLink } from "@/lib/site";
-import PropertyGallery from "@/components/PropertyGallery";
+import UnitGallery from "@/components/UnitGallery";
+import { getTypePhotos } from "@/lib/photos-db";
 import LeadForm from "@/components/LeadForm";
 
 // Stok & harga harus selalu terbaru dari database.
@@ -96,6 +97,7 @@ export default async function PropertyDetailPage({
 
   const slug = propertySlug(property);
   const info = PROJECTS[project];
+  const fotoTipe = property.typeSlug ? await getTypePhotos(project, property.typeSlug) : [];
 
   const canBuy =
     property.status === "AVAILABLE" &&
@@ -163,10 +165,14 @@ export default async function PropertyDetailPage({
           {/* LEFT */}
           <div>
             {/* PROPERTY GALLERY */}
-            <PropertyGallery
-              slug={slug}
+            <UnitGallery
+              photos={fotoTipe}
+              typeName={property.typeName}
               project={property.project}
               block={property.block}
+              floor={property.floor}
+              lb={property.buildingArea}
+              lt={property.landArea}
             />
 
             {/* SUMMARY */}

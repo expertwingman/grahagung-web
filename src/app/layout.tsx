@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+
 import "./globals.css";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { SITE } from "@/lib/site";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const geistSans = { variable: "font-sans" };
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),

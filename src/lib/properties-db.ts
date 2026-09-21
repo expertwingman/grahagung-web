@@ -19,10 +19,12 @@ export type DbProperty = {
   land_area: number | null;
   price: number | null;
   status: PropertyStatus;
+  type_slug: string | null;
+  type_name: string | null;
 };
 
 const KOLOM =
-  "id, project, location, block, shgb, floor, building_area, land_area, price, status";
+  "id, project, location, block, shgb, floor, building_area, land_area, price, status, type_slug, type_name";
 
 function toProperty(row: DbProperty): Property {
   return {
@@ -36,6 +38,8 @@ function toProperty(row: DbProperty): Property {
     landArea: row.land_area,
     price: row.price,
     status: row.status,
+    typeSlug: row.type_slug ?? null,
+    typeName: row.type_name ?? null,
   };
 }
 

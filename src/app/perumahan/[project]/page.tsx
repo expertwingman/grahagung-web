@@ -6,6 +6,9 @@ import { getPropertiesByProject } from "@/lib/properties-db";
 import { PROJECTS } from "@/lib/projects-info";
 import { unitPath, formatRupiah, formatRupiahSingkat } from "@/lib/property-utils";
 import { SITE, waLink } from "@/lib/site";
+import { getProjectPhotos, getProjectCover } from "@/lib/photos-db";
+import CoverImage from "@/components/CoverImage";
+import PhotoGrid from "@/components/PhotoGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +46,12 @@ export default async function ProjectPage({ params }: Props) {
   const units = await getPropertiesByProject(project);
   if (units.length === 0) notFound();
 
+  const [sampul, fotoKawasan] = await Promise.all([
+    getProjectCover(project),
+    getProjectPhotos(project),
+  ]);
+  const fotoGaleri = fotoKawasan.filter((f) => !["sampul", "siteplan", "lokasi"].includes(f.category));
+
   const tersedia = units.filter((u) => u.status === "AVAILABLE" && u.price !== null);
   const harga = tersedia.map((u) => u.price as number);
   const min = harga.length ? Math.min(...harga) : null;
@@ -76,8 +85,13 @@ export default async function ProjectPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* HERO PROYEK */}
-      <section className="bg-[#153c33] text-white">
-        <div className="mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
+      <section className="relative bg-[#153c33] text-white">
+        {sampul && (
+          <CoverImage photo={sampul} alt={info.name} priority className="absolute inset-0">
+            <div className="absolute inset-0 bg-[#153c33]/80" />
+          </CoverImage>
+        )}
+        <div className="relative mx-auto max-w-7xl px-6 py-14 lg:px-10 lg:py-20">
           <nav aria-label="Breadcrumb" className="text-xs text-white/60">
             <ol className="flex flex-wrap gap-2">
               <li><Link href="/" className="hover:text-white">Beranda</Link></li>
@@ -193,6 +207,24 @@ export default async function ProjectPage({ params }: Props) {
           </aside>
         </div>
       </section>
+
+      {/* GALERI KAWASAN */}
+      {fotoGaleri.length > 0 && (
+        <section className="mx-auto max-w-7xl px-6 pb-14 lg:px-10">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#927845]">Galeri</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-tight">Suasana kawasan</h2>
+            </div>
+            <Link href={`/galeri/${project}`} className="shrink-0 text-sm font-semibold underline-offset-4 hover:underline">
+              Semua foto →
+            </Link>
+          </div>
+          <div className="mt-6">
+            <PhotoGrid photos={fotoGaleri.slice(0, 6)} columns={3} />
+          </div>
+        </section>
+      )}
 
       {/* SITEPLAN & UNIT */}
       <section className="border-t border-black/10 bg-white">

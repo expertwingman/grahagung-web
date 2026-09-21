@@ -4,6 +4,8 @@ import { getProjectSummaries } from "@/lib/properties-db";
 import { PROJECTS } from "@/lib/projects-info";
 import { projectPath, formatRupiahSingkat } from "@/lib/property-utils";
 import { SITE, waLink } from "@/lib/site";
+import { getProjectCover } from "@/lib/photos-db";
+import CoverImage from "@/components/CoverImage";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,10 @@ const langkah = [
 export default async function Home() {
   const ringkasan = await getProjectSummaries();
   const totalTersedia = ringkasan.reduce((a, p) => a + p.available, 0);
+  const sampul = Object.fromEntries(
+    await Promise.all(ringkasan.map(async (p) => [p.slug, await getProjectCover(p.slug)] as const))
+  );
+  const heroFoto = sampul["wisata-semanggi"] ?? null;
 
   return (
     <main>
@@ -80,9 +86,13 @@ export default async function Home() {
           </div>
 
           <div className="flex items-center">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] bg-[#285a4d]">
-              {/* TODO: ganti dengan <Image> foto gerbang Wisata Semanggi */}
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,.18),transparent_30%),linear-gradient(135deg,#6f9082,#285a4d_55%,#16372f)]" />
+            <CoverImage
+              photo={heroFoto}
+              alt="Wisata Semanggi, Surabaya Timur"
+              priority
+              className="aspect-[4/3] w-full rounded-[2rem]"
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               <div className="absolute inset-x-8 bottom-8">
                 <p className="text-sm uppercase tracking-[0.22em] text-white/60">
                   Wisata Semanggi
@@ -92,7 +102,7 @@ export default async function Home() {
                 </h2>
                 <p className="mt-3 text-sm text-white/70">Surabaya Timur</p>
               </div>
-            </div>
+            </CoverImage>
           </div>
         </div>
       </section>
@@ -121,14 +131,18 @@ export default async function Home() {
                 className="overflow-hidden rounded-[1.75rem] border border-black/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
                 <Link href={projectPath(p.name)} className="block">
-                  <div className="aspect-[4/3] bg-[#dfe7df]">
-                    {/* TODO: ganti dengan <Image> render proyek */}
-                    <div className="flex h-full items-end bg-[linear-gradient(135deg,#adc0b3,#658277_55%,#294d43)] p-6">
+                  <CoverImage
+                    photo={sampul[p.slug] ?? null}
+                    alt={p.name}
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    className="aspect-[4/3]"
+                  >
+                    <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/50 to-transparent p-6">
                       <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#153c33]">
                         {p.available} unit tersedia
                       </span>
                     </div>
-                  </div>
+                  </CoverImage>
                 </Link>
 
                 <div className="p-6">

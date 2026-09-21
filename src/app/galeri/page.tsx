@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PROJECTS } from "@/lib/projects-info";
+import { getProjectCover } from "@/lib/photos-db";
+import CoverImage from "@/components/CoverImage";
 
 export const metadata: Metadata = {
   title: "Galeri Foto Proyek",
@@ -9,7 +11,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/galeri" },
 };
 
-export default function GaleriPage() {
+export default async function GaleriPage() {
+  const sampul = Object.fromEntries(
+    await Promise.all(Object.keys(PROJECTS).map(async (slug) => [slug, await getProjectCover(slug)] as const))
+  );
+
   return (
     <main className="mx-auto max-w-7xl px-6 py-14 lg:px-10">
       <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#927845]">Galeri</p>
@@ -26,8 +32,7 @@ export default function GaleriPage() {
             href={`/galeri/${p.slug}`}
             className="group overflow-hidden rounded-[1.5rem] border border-black/10 bg-white transition hover:-translate-y-1 hover:shadow-lg"
           >
-            {/* TODO: foto sampul proyek */}
-            <div className="aspect-[4/3] bg-[linear-gradient(135deg,#adc0b3,#658277_55%,#294d43)]" />
+            <CoverImage photo={sampul[p.slug] ?? null} alt={p.name} sizes="(max-width: 768px) 100vw, 33vw" className="aspect-[4/3]" />
             <div className="p-5">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#927845]">{p.area}</p>
               <h2 className="mt-1 text-xl font-semibold">{p.name}</h2>

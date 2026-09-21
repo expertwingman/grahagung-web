@@ -18,4 +18,6 @@ export type Property = {
   landArea: number | null;
   price: number | null;
   status: PropertyStatus;
+  typeSlug: string | null;
+  typeName: string | null;
 };
